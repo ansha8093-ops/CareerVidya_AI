@@ -308,7 +308,22 @@ def refresh_captcha(request):
         'captcha_image': captcha_image_url(new_key)
     })
 
+# ✅ SEND EMAIL FUNCTION
+def send_email(to_email, subject, html_content):
+    message = Mail(
+        from_email='patyaldeepanshu05@gmail.com',  # MUST VERIFIED IN SENDGRID
+        to_emails=to_email,
+        subject=subject,
+        html_content=html_content
+    )
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        sg.send(message)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
+
+# ✅ REGISTER VIEW
 def register_view(request):
     if request.method == "POST":
         first_name = request.POST.get('first_name')
@@ -317,41 +332,31 @@ def register_view(request):
         password = request.POST.get('password')
         captcha_input = request.POST.get('captcha')
 
-        # ✅ Required fields check
+        # 🔴 Required fields
         if not all([first_name, last_name, email, password, captcha_input]):
-            return render(request, 'accounts/register.html', {
-                'error': 'All fields are required'
-            })
+            return render(request, 'accounts/register.html', {'error': 'All fields are required'})
 
-        # ✅ Name validation
+        # 🔴 Name validation
         if not re.match("^[A-Za-z]+$", first_name):
-            return render(request, 'accounts/register.html', {
-                'error': 'First name should contain only letters'
-            })
+            return render(request, 'accounts/register.html', {'error': 'First name should contain only letters'})
 
         if not re.match("^[A-Za-z]+$", last_name):
-            return render(request, 'accounts/register.html', {
-                'error': 'Last name should contain only letters'
-            })
+            return render(request, 'accounts/register.html', {'error': 'Last name should contain only letters'})
 
-        # ✅ Email already exists
+        # 🔴 Email exists
         if User.objects.filter(username=email).exists():
-            return render(request, 'accounts/register.html', {
-                'error': 'Email already registered'
-            })
+            return render(request, 'accounts/register.html', {'error': 'Email already registered'})
 
-        # ✅ CAPTCHA validation
+        # 🔴 CAPTCHA validation
         captcha_key = request.POST.get('captcha_key')
         try:
             captcha_obj = CaptchaStore.objects.get(hashkey=captcha_key)
             if captcha_obj.response.lower() != captcha_input.lower():
-                raise Exception("Invalid Captcha")
+                raise Exception()
         except:
-            return render(request, 'accounts/register.html', {
-                'error': 'Invalid Captcha'
-            })
+            return render(request, 'accounts/register.html', {'error': 'Invalid Captcha'})
 
-        # ✅ Create User
+        # 🟢 CREATE USER
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -360,32 +365,40 @@ def register_view(request):
             last_name=last_name
         )
 
-        # ✅ LOGIN FIX (correct way)
+        # 🟢 LOGIN USER
         user = authenticate(request, username=email, password=password)
-        if user is not None:
+        if user:
             login(request, user)
 
-        # ✅ EMAIL TO USER
-        send_mail(
-            'Registration Successful - CareerVidya AI',
-            f'Hello {first_name},\n\nYour registration on CareerVidya AI is successful 🎉\n\nThank you for joining us!',
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
+        # ===========================
+        # 🟢 EMAIL TO USER
+        # ===========================
+        send_email(
+            email,
+            "Welcome to CareerVidya AI 🚀",
+            f"""
+            <h2>Hello {first_name} 👋</h2>
+            <p>Your registration on <b>CareerVidya AI</b> is successful 🎉</p>
+            <p>Start exploring AI career tools now 🚀</p>
+            """
         )
 
-        # ✅ EMAIL TO ADMIN
-        send_mail(
-            'New User Registered',
-            f'New user registered:\n\nName: {first_name} {last_name}\nEmail: {email}',
-            settings.EMAIL_HOST_USER,
-            ['patyaldeepanshu05@gmail.com'],
-            fail_silently=False,
+        # ===========================
+        # 🟢 EMAIL TO ADMIN
+        # ===========================
+        send_email(
+            "patyaldeepanshu05@gmail.com",
+            "New User Registered",
+            f"""
+            <h3>New User Registered</h3>
+            <p><b>Name:</b> {first_name} {last_name}</p>
+            <p><b>Email:</b> {email}</p>
+            """
         )
 
         return redirect('dashboard')
 
-    # ✅ Generate CAPTCHA
+    # 🟢 CAPTCHA GENERATE
     captcha = CaptchaStore.generate_key()
     captcha_image = captcha_image_url(captcha)
 
@@ -393,7 +406,6 @@ def register_view(request):
         'captcha_key': captcha,
         'captcha_image': captcha_image
     })
-
 @login_required
 def edit_profile(request):
     profile = StudentProfile.objects.get(user=request.user)
@@ -1026,36 +1038,36 @@ def skill_based_careers(request):
         'careers': careers
     })
 
-@staff_member_required
-def run_migrations(request):
-    import subprocess
-    import os
-    from django.http import HttpResponse
+# @staff_member_required
+# def run_migrations(request):
+#     import subprocess
+#     import os
+#     from django.http import HttpResponse
 
-    # Core folder me jaake migrate run karna
-    core_path = "/opt/render/project/src/AI_Career_Guidance/core"
+#     # Core folder me jaake migrate run karna
+#     core_path = "/opt/render/project/src/AI_Career_Guidance/core"
     
-    result = subprocess.run(
-        ["python", "manage.py", "migrate", "--noinput"],
-        cwd=core_path,            # <--- yahi important hai
-        capture_output=True,
-        text=True
-    )
-    return HttpResponse(f"<pre>{result.stdout}\n{result.stderr}</pre>")
+#     result = subprocess.run(
+#         ["python", "manage.py", "migrate", "--noinput"],
+#         cwd=core_path,            # <--- yahi important hai
+#         capture_output=True,
+#         text=True
+#     )
+#     return HttpResponse(f"<pre>{result.stdout}\n{result.stderr}</pre>")
 
-def create_superuser(request):
-    # Ye secret key ya simple check laga do taki koi aur access na kare
-    if request.GET.get("key") != "mysecret123":
-        return HttpResponse("Not authorized", status=403)
+# def create_superuser(request):
+#     # Ye secret key ya simple check laga do taki koi aur access na kare
+#     if request.GET.get("key") != "mysecret123":
+#         return HttpResponse("Not authorized", status=403)
 
-    if not User.objects.filter(username="admin").exists():
-        User.objects.create_superuser(
-            username="admin",
-            email="admin@example.com",
-            password="Admin@123"
-        )
-        return HttpResponse("Superuser created successfully!")
-    return HttpResponse("Superuser already exists.")
+#     if not User.objects.filter(username="admin").exists():
+#         User.objects.create_superuser(
+#             username="admin",
+#             email="admin@example.com",
+#             password="Admin@123"
+#         )
+#         return HttpResponse("Superuser created successfully!")
+#     return HttpResponse("Superuser already exists.")
 
 @login_required
 def admin_categories(request):
