@@ -20,7 +20,7 @@ from django.views.decorators.http import require_POST
 from .models import CareerQuizQuestion, CareerQuizOption, CareerQuizResult ,Category,CombinedCareerResult
 from django.http import HttpResponse
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Content
 from .models import Category
 from .forms import CategoryForm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer,ListFlowable, ListItem
@@ -308,122 +308,27 @@ def refresh_captcha(request):
         'captcha_image': captcha_image_url(new_key)
     })
 
-# ✅ SEND EMAIL FUNCTION
-
-
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, Content
-from django.conf import settings
-
-# def send_email(to_email, subject, html_content):
-#     message = Mail(
-#         from_email=settings.DEFAULT_FROM_EMAIL,
-#         to_emails=to_email,
-#         subject=subject,
-#         html_content=html_content
-#     )
-
-#     # Add plain text version
-#     message.add_content(Content("text/plain", "Your registration is successful."))
-
-#     # Optional: Reply-To header
-#     message.reply_to = settings.DEFAULT_FROM_EMAIL
-
-#     try:
-#         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-#         response = sg.send(message)
-#         print("Email sent, status:", response.status_code)
-#     except Exception as e:
-#         print("Error sending email:", e)
-
-# def register_view(request):
-#     if request.method == "POST":
-#         first_name = request.POST.get('first_name')
-#         last_name = request.POST.get('last_name')
-#         email = request.POST.get('email')
-#         password = request.POST.get('password')
-#         captcha_input = request.POST.get('captcha')
-
-#         if not all([first_name, last_name, email, password, captcha_input]):
-#             return render(request, 'accounts/register.html', {'error': 'All fields are required'})
-
-#         if not re.match("^[A-Za-z]+$", first_name):
-#             return render(request, 'accounts/register.html', {'error': 'First name should contain only letters'})
-
-#         if not re.match("^[A-Za-z]+$", last_name):
-#             return render(request, 'accounts/register.html', {'error': 'Last name should contain only letters'})
-
-#         if User.objects.filter(username=email).exists():
-#             return render(request, 'accounts/register.html', {'error': 'Email already registered'})
-
-#         captcha_key = request.POST.get('captcha_key')
-#         try:
-#             captcha_obj = CaptchaStore.objects.get(hashkey=captcha_key)
-#             if captcha_obj.response.lower() != captcha_input.lower():
-#                 raise Exception()
-#         except:
-#             return render(request, 'accounts/register.html', {'error': 'Invalid Captcha'})
-
-#         user = User.objects.create_user(
-#             username=email,
-#             email=email,
-#             password=password,
-#             first_name=first_name,
-#             last_name=last_name
-#         )
-
-#         user = authenticate(request, username=email, password=password)
-#         if user:
-#             login(request, user)
-
-#         send_email(
-#             email,
-#             "Welcome to CareerVidya AI",
-#             f"""
-#             <h2>Hello {first_name}</h2>
-#             <p>Your registration is successful.</p>
-#             <p>Platform: CareerVidya AI</p>
-#             <p>Start exploring now</p>
-#             <p>Thanks<br>CareerVidya Team</p>
-#             """
-#         )
-
-#         send_email(
-#             "patyaldeepanshu05@gmail.com",
-#             "New User Registered",
-#             f"""
-#             <h3>New User Registered</h3>
-#             <p>Name: {first_name} {last_name}</p>
-#             <p>Email: {email}</p>
-#             """
-#         )
-
-#         return redirect('dashboard')
-
-#     captcha = CaptchaStore.generate_key()
-#     captcha_image = captcha_image_url(captcha)
-
-#     return render(request, 'accounts/register.html', {
-#         'captcha_key': captcha,
-#         'captcha_image': captcha_image
-#     })
-from django.core.mail import EmailMultiAlternatives
 
 def send_email(to_email, subject, html_content):
-    # Django EmailMultiAlternatives for HTML + plain text
-    plain_text = "Your registration is successful."
-    msg = EmailMultiAlternatives(
-        subject,
-        plain_text,
-        settings.DEFAULT_FROM_EMAIL,
-        [to_email]
+    message = Mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to_emails=to_email,
+        subject=subject,
+        html_content=html_content
     )
-    msg.attach_alternative(html_content, "text/html")
+
+    # Add plain text version
+    message.add_content(Content("text/plain", "Your registration is successful."))
+
+    # Optional: Reply-To header
+    message.reply_to = settings.DEFAULT_FROM_EMAIL
+
     try:
-        msg.send()
-        print(f"Email sent to {to_email}")
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        print("Email sent, status:", response.status_code)
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print("Error sending email:", e)
 
 def register_view(request):
     if request.method == "POST":
@@ -433,17 +338,18 @@ def register_view(request):
         password = request.POST.get('password')
         captcha_input = request.POST.get('captcha')
 
-        # Basic validation
         if not all([first_name, last_name, email, password, captcha_input]):
             return render(request, 'accounts/register.html', {'error': 'All fields are required'})
 
-        if not first_name.isalpha() or not last_name.isalpha():
-            return render(request, 'accounts/register.html', {'error': 'Names should contain only letters'})
+        if not re.match("^[A-Za-z]+$", first_name):
+            return render(request, 'accounts/register.html', {'error': 'First name should contain only letters'})
+
+        if not re.match("^[A-Za-z]+$", last_name):
+            return render(request, 'accounts/register.html', {'error': 'Last name should contain only letters'})
 
         if User.objects.filter(username=email).exists():
             return render(request, 'accounts/register.html', {'error': 'Email already registered'})
 
-        # Captcha validation
         captcha_key = request.POST.get('captcha_key')
         try:
             captcha_obj = CaptchaStore.objects.get(hashkey=captcha_key)
@@ -452,7 +358,6 @@ def register_view(request):
         except:
             return render(request, 'accounts/register.html', {'error': 'Invalid Captcha'})
 
-        # Create user
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -465,7 +370,6 @@ def register_view(request):
         if user:
             login(request, user)
 
-        # Send user email
         send_email(
             email,
             "Welcome to CareerVidya AI",
@@ -478,7 +382,6 @@ def register_view(request):
             """
         )
 
-        # Send admin email
         send_email(
             "patyaldeepanshu05@gmail.com",
             "New User Registered",
@@ -491,7 +394,6 @@ def register_view(request):
 
         return redirect('dashboard')
 
-    # Generate captcha
     captcha = CaptchaStore.generate_key()
     captcha_image = captcha_image_url(captcha)
 
@@ -499,6 +401,100 @@ def register_view(request):
         'captcha_key': captcha,
         'captcha_image': captcha_image
     })
+
+# locally eamil setup code
+# from django.core.mail import EmailMultiAlternatives
+
+# def send_email(to_email, subject, html_content):
+#     # Django EmailMultiAlternatives for HTML + plain text
+#     plain_text = "Your registration is successful."
+#     msg = EmailMultiAlternatives(
+#         subject,
+#         plain_text,
+#         settings.DEFAULT_FROM_EMAIL,
+#         [to_email]
+#     )
+#     msg.attach_alternative(html_content, "text/html")
+#     try:
+#         msg.send()
+#         print(f"Email sent to {to_email}")
+#     except Exception as e:
+#         print(f"Error sending email: {e}")
+
+# def register_view(request):
+#     if request.method == "POST":
+#         first_name = request.POST.get('first_name')
+#         last_name = request.POST.get('last_name')
+#         email = request.POST.get('email')
+#         password = request.POST.get('password')
+#         captcha_input = request.POST.get('captcha')
+
+#         # Basic validation
+#         if not all([first_name, last_name, email, password, captcha_input]):
+#             return render(request, 'accounts/register.html', {'error': 'All fields are required'})
+
+#         if not first_name.isalpha() or not last_name.isalpha():
+#             return render(request, 'accounts/register.html', {'error': 'Names should contain only letters'})
+
+#         if User.objects.filter(username=email).exists():
+#             return render(request, 'accounts/register.html', {'error': 'Email already registered'})
+
+#         # Captcha validation
+#         captcha_key = request.POST.get('captcha_key')
+#         try:
+#             captcha_obj = CaptchaStore.objects.get(hashkey=captcha_key)
+#             if captcha_obj.response.lower() != captcha_input.lower():
+#                 raise Exception()
+#         except:
+#             return render(request, 'accounts/register.html', {'error': 'Invalid Captcha'})
+
+#         # Create user
+#         user = User.objects.create_user(
+#             username=email,
+#             email=email,
+#             password=password,
+#             first_name=first_name,
+#             last_name=last_name
+#         )
+
+#         user = authenticate(request, username=email, password=password)
+#         if user:
+#             login(request, user)
+
+#         # Send user email
+#         send_email(
+#             email,
+#             "Welcome to CareerVidya AI",
+#             f"""
+#             <h2>Hello {first_name}</h2>
+#             <p>Your registration is successful.</p>
+#             <p>Platform: CareerVidya AI</p>
+#             <p>Start exploring now</p>
+#             <p>Thanks<br>CareerVidya Team</p>
+#             """
+#         )
+
+#         # Send admin email
+#         send_email(
+#             "patyaldeepanshu05@gmail.com",
+#             "New User Registered",
+#             f"""
+#             <h3>New User Registered</h3>
+#             <p>Name: {first_name} {last_name}</p>
+#             <p>Email: {email}</p>
+#             """
+#         )
+
+#         return redirect('dashboard')
+
+#     # Generate captcha
+#     captcha = CaptchaStore.generate_key()
+#     captcha_image = captcha_image_url(captcha)
+
+#     return render(request, 'accounts/register.html', {
+#         'captcha_key': captcha,
+#         'captcha_image': captcha_image
+#     })
 @login_required
 def edit_profile(request):
     profile = StudentProfile.objects.get(user=request.user)
