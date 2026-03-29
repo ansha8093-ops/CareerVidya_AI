@@ -42,6 +42,10 @@ from django.http import JsonResponse
 import random
 
 
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
 @never_cache
 @login_required
 def dashboard(request):
@@ -50,30 +54,34 @@ def dashboard(request):
     # ================= INTEREST NAME =================
     interest_name = None
     if profile.interest:
-        category = Category.objects.filter(id=profile.interest).first()
+        category = Category.objects.filter(
+            name__iexact=profile.interest.strip()
+        ).first()
+
         if category:
             interest_name = category.name
+        else:
+            interest_name = profile.interest
 
-    # ================= QUIZ RESULT (MAIN SOURCE) =================
+    # ================= QUIZ RESULT =================
     result = CombinedCareerResult.latest_for_student(profile)
 
     top_career = None
     top_careers_with_gap = []
     match_percentage = 0
 
-    # 🔥 ONLY SHOW IF QUIZ DONE
-    if result:
+    if result and result.suggested_career:
         top_career = result.suggested_career
         match_percentage = result.match_percentage or 0
 
-        # 🔥 Top career + 2 random similar (optional)
+        # 🔥 Similar careers (SAFE)
         careers = Career.objects.filter(
             category=top_career.category
         ).exclude(id=top_career.id)[:2]
 
         all_careers = [(top_career, match_percentage)]
         for c in careers:
-            all_careers.append((c, 50))  # dummy score for UI
+            all_careers.append((c, 50))  # dummy score
 
         # 🔥 USER SKILLS
         user_skills = {
@@ -81,9 +89,11 @@ def dashboard(request):
             for ss in profile.student_skills.select_related("skill")
         }
 
+        # 🔥 GAP ANALYSIS
         for career, score in all_careers:
             career_skills = {
-                s.name.strip().lower() for s in career.required_skills.all()
+                s.name.strip().lower()
+                for s in career.required_skills.all()
             }
 
             gap = list(career_skills - set(user_skills.keys()))
@@ -121,7 +131,7 @@ def dashboard(request):
     # ================= QUIZ STATUS =================
     has_taken_quiz = result is not None
 
-    # ✅ Backend: only career required skills
+    # ================= CHART DATA =================
     chart_labels = []
     chart_required = []
     chart_user = []
@@ -129,13 +139,14 @@ def dashboard(request):
     if top_career:
         for skill in top_career.required_skills.all():
             chart_labels.append(skill.name.strip())
-            chart_required.append(80)  # Market demand
+            chart_required.append(80)  # market demand
 
-            # Check if user has this skill
             if profile.student_skills.filter(skill=skill).exists():
-                chart_user.append(80)  # User has skill → full green
+                chart_user.append(80)  # green
             else:
-                chart_user.append(0) 
+                chart_user.append(0)   # red
+
+    # ================= FINAL RENDER =================
     return render(request, "accounts/dashboard.html", {
         "profile": profile,
         "interest_name": interest_name,
@@ -149,7 +160,6 @@ def dashboard(request):
         "match_percentage": match_percentage,
         "completion": completion,
 
-        # chart disable (jab tak stable na ho)
         "chart_labels": chart_labels,
         "chart_required": chart_required,
         "chart_user": chart_user,
