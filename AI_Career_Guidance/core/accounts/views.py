@@ -40,8 +40,7 @@ from captcha.models import CaptchaStore
 from django.core.mail import send_mail
 from django.http import JsonResponse
 import random
-
-
+from analyzer.models import ResumeAnalysis
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -631,9 +630,12 @@ def admin_dashboard(request):
     total_skills = Skill.objects.count()
     total_categories = Category.objects.count()
     total_quiz_questions = CareerQuizQuestion.objects.count()
-    total_quiz_results = CombinedCareerResult.objects.count()  # ✅ FIXED
+    total_quiz_results = CombinedCareerResult.objects.count() 
+    total_resumes = ResumeAnalysis.objects.count() 
 
     recent_students = StudentProfile.objects.select_related('user').order_by('-id')[:10]
+    resumes = ResumeAnalysis.objects.select_related('user').order_by('-created_at')[:10]
+
 
     context = {
         'total_users': total_users,
@@ -643,9 +645,19 @@ def admin_dashboard(request):
         "total_quiz_questions": total_quiz_questions,
         "total_quiz_results": total_quiz_results,
         'recent_students': recent_students,
+        'resumes': resumes,
+        'total_resumes': total_resumes,
     }
 
     return render(request, 'accounts/admin/dashboard.html', context)
+
+@staff_member_required
+def resume_list(request):
+    resumes = ResumeAnalysis.objects.select_related('user').order_by('-created_at')
+
+    return render(request, 'accounts/admin/resume_list.html', {
+        'resumes': resumes
+    })
 
 @staff_member_required
 def admin_users(request):
@@ -1151,32 +1163,32 @@ def skill_based_careers(request):
     })
 
 import subprocess
-# @staff_member_required
-# def run_migrations(request):
-#     core_path = "/opt/render/project/src/AI_Career_Guidance/core"
+@staff_member_required
+def run_migrations(request):
+    core_path = "/opt/render/project/src/AI_Career_Guidance/core"
 
-#     # Run all migrations safely
-#     result = subprocess.run(
-#         ["python", "manage.py", "migrate", "--noinput"],
-#         cwd=core_path,
-#         capture_output=True,
-#         text=True
-#     )
+    # Run all migrations safely
+    result = subprocess.run(
+        ["python", "manage.py", "migrate", "--noinput"],
+        cwd=core_path,
+        capture_output=True,
+        text=True
+    )
 
-#     return HttpResponse(f"<pre>{result.stdout}\n{result.stderr}</pre>")
-# def create_superuser(request):
-#     # Ye secret key ya simple check laga do taki koi aur access na kare
-#     if request.GET.get("key") != "mysecret123":
-#         return HttpResponse("Not authorized", status=403)
+    return HttpResponse(f"<pre>{result.stdout}\n{result.stderr}</pre>")
+def create_superuser(request):
+    # Ye secret key ya simple check laga do taki koi aur access na kare
+    if request.GET.get("key") != "mysecret123":
+        return HttpResponse("Not authorized", status=403)
 
-#     if not User.objects.filter(username="admin").exists():
-#         User.objects.create_superuser(
-#             username="admin",
-#             email="admin@example.com",
-#             password="Admin@123"
-#         )
-#         return HttpResponse("Superuser created successfully!")
-#     return HttpResponse("Superuser already exists.")
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="Admin@123"
+        )
+        return HttpResponse("Superuser created successfully!")
+    return HttpResponse("Superuser already exists.")
 
 @login_required
 def admin_categories(request):

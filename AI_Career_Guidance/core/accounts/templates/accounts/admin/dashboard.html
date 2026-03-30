@@ -34,12 +34,19 @@
     <h2 class="text-xl font-semibold text-white">Quiz Results</h2>
     <p class="text-red-400 text-3xl font-bold">{{ total_quiz_results }}</p>
   </div>
+
+  <div class="bg-gray-800 p-6 rounded-xl shadow text-center hover:scale-105 transition-transform">
+  <h2 class="text-xl font-semibold text-white">Resumes</h2>
+  <p class="text-yellow-400 text-3xl font-bold">{{ total_resumes }}</p>
+</div>
 </div>
 
 <!-- Multi-color Chart -->
 <div class="mt-8 bg-gray-800 p-4 rounded-xl shadow w-full overflow-x-auto" style="min-height:350px;">
   <canvas id="dashboardChart" class="w-full h-64 sm:h-80"></canvas>
 </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -48,7 +55,7 @@ const ctx = document.getElementById('dashboardChart').getContext('2d');
 new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: ['Users','Careers','Skills','Categories','Quiz Questions','Quiz Results'],
+    labels: ['Users','Careers','Skills','Categories','Quiz Questions','Quiz Results','Resumes'],
     datasets: [{
       label: 'Total Count',
       data: [
@@ -57,7 +64,8 @@ new Chart(ctx, {
         {{ total_skills }},
         {{ total_categories }},
         {{ total_quiz_questions }},
-        {{ total_quiz_results }}
+        {{ total_quiz_results }},
+        {{ total_resumes }},
       ],
       backgroundColor: [
         'rgba(14,203,255,0.8)',

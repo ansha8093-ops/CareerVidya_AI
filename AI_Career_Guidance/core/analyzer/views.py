@@ -175,6 +175,8 @@ def analyze_resume(resume_text, role):
 # ==============================
 # Upload Resume View
 # ==============================
+from .models import ResumeAnalysis
+
 def upload_resume(request):
 
     if request.method == "POST":
@@ -198,26 +200,25 @@ def upload_resume(request):
                 "error": "File must be under 5MB."
             })
 
-        # Save file
-        file_name = f"{uuid.uuid4()}_{resume_file.name}"
-        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        # 🔥 DATABASE ME SAVE KAR (AUTO FILE SAVE HO JAYEGI)
+        analysis_obj = ResumeAnalysis.objects.create(
+            user=request.user,
+            resume=resume_file,
+            job_role=role
+        )
 
-        os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+        # 🔥 FILE PATH YAHAN SE LE
+        file_path = analysis_obj.resume.path
 
-        with open(file_path, "wb+") as destination:
-            for chunk in resume_file.chunks():
-                destination.write(chunk)
-
+        # TEXT EXTRACT
         resume_text = extract_text(file_path)
-
-        if os.path.exists(file_path):
-            os.remove(file_path)
 
         if not resume_text:
             return render(request, "upload.html", {
                 "error": "Could not extract text from resume."
             })
 
+        # ANALYSIS
         result = analyze_resume(resume_text, role)
 
         return render(request, "result.html", {

@@ -13,17 +13,26 @@
     <h2 class="text-2xl font-bold text-cyan-400 mb-4">Admin Panel</h2>
 
     <a href="{% url 'home' %}" class="block hover:text-cyan-300 mb-1">🏠 Home</a>
-    <a href="{% url 'admin_dashboard' %}" class="block hover:text-cyan-300 mb-1">Dashboard</a>
+    <a href="{% url 'admin_dashboard' %}" class="block hover:text-cyan-300 mb-1">📊Dashboard</a>
     <a href="{% url 'admin_users' %}" class="block hover:text-cyan-300 mb-1">👥 Users</a>
-    <a href="{% url 'admin_careers' %}" class="block hover:text-cyan-300 mb-1">Careers</a>
-    <a href="{% url 'admin_categories' %}" class="block hover:text-cyan-300 mb-1">Categories</a>
-    <a href="{% url 'admin_skills' %}" class="block hover:text-cyan-300 mb-1">Skills</a>
-    <a href="{% url 'admin_quiz_list' %}" class="block hover:text-cyan-300 mb-1">Quiz</a>
-    <a href="{% url 'admin_quiz_results' %}" class="block hover:text-cyan-300 mb-1">Quiz Results</a>
-    <a href="{% url 'admin_student_profiles' %}" class="block hover:text-cyan-300 font-semibold mb-1">👨‍🎓 Student Profiles</a>
+        <a href="{% url 'admin_student_profiles' %}"class="block hover:text-cyan-300 mb-1">👨‍🎓 Student Profiles</a>
 
-    <a href="{% url 'logout' %}" class="block text-red-400 mt-4">Logout</a>
-  </aside>
+    <a href="{% url 'admin_careers' %}" class="block hover:text-cyan-300 mb-1">💼Careers</a>
+    <a href="{% url 'admin_categories' %}" class="block hover:text-cyan-300 mb-1">🗂️Categories</a>
+    <a href="{% url 'admin_skills' %}" class="block hover:text-cyan-300 mb-1">🧠Skills</a>
+    <a href="{% url 'admin_quiz_list' %}" class="block hover:text-cyan-300 mb-1">📝Quiz</a>
+    <a href="{% url 'admin_quiz_results' %}" class="block hover:text-cyan-300 mb-1">📈Quiz Results</a>
+    <a href="{% url 'admin_resumes' %}" class="block hover:text-cyan-300 mb-1">
+    📄 Resume Analysis
+</a>
+
+<form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit"
+                class="w-20px text-left px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 transition">
+          Logout
+        </button>
+      </form>  </aside>
 
   <!-- MOBILE TOPBAR -->
   <div class="md:hidden flex items-center justify-between bg-gray-800 p-4 w-full">
@@ -36,17 +45,24 @@
     <h2 class="text-2xl font-bold text-cyan-400 mb-6">Admin Panel</h2>
 
     <a href="{% url 'home' %}" class="block hover:text-cyan-300 mb-2">🏠 Home</a>
-    <a href="{% url 'admin_dashboard' %}" class="block hover:text-cyan-300 mb-2">Dashboard</a>
+    <a href="{% url 'admin_dashboard' %}" class="block hover:text-cyan-300 mb-2">📊Dashboard</a>
     <a href="{% url 'admin_users' %}" class="block hover:text-cyan-300 mb-2">👥 Users</a>
-    <a href="{% url 'admin_careers' %}" class="block hover:text-cyan-300 mb-2">Careers</a>
-    <a href="{% url 'admin_categories' %}" class="block hover:text-cyan-300 mb-2">Categories</a>
-    <a href="{% url 'admin_skills' %}" class="block hover:text-cyan-300 mb-2">Skills</a>
-    <a href="{% url 'admin_quiz_list' %}" class="block hover:text-cyan-300 mb-2">Quiz</a>
-    <a href="{% url 'admin_quiz_results' %}" class="block hover:text-cyan-300 mb-2">Quiz Results</a>
-    <a href="{% url 'admin_student_profiles' %}" class="block hover:text-cyan-300 font-semibold mb-2">👨‍🎓 Student Profiles</a>
+        <a href="{% url 'admin_student_profiles' %}" class="block hover:text-cyan-300 mb-2">👨‍🎓Student Profiles</a>
 
-    <a href="{% url 'logout' %}" class="block text-red-400 mt-4">Logout</a>
-  </aside>
+    <a href="{% url 'admin_careers' %}" class="block hover:text-cyan-300 mb-2">💼Careers</a>
+    <a href="{% url 'admin_categories' %}" class="block hover:text-cyan-300 mb-2">🗂️Categories</a>
+    <a href="{% url 'admin_skills' %}" class="block hover:text-cyan-300 mb-2">🧠Skills</a>
+    <a href="{% url 'admin_quiz_list' %}" class="block hover:text-cyan-300 mb-2">📝Quiz</a>
+    <a href="{% url 'admin_quiz_results' %}" class="block hover:text-cyan-300 mb-2">📈Quiz Results</a>
+    <a href="{% url 'admin_resumes' %}" class="block py-2 px-2 hover:bg-gray-700">📄Resume Analysis</a>
+
+<form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit"
+                class="w-20px text-left px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 transition">
+          Logout
+        </button>
+      </form>  </aside>
 
   <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 sm:p-6 md:p-8 md:ml-64">

@@ -1,0 +1,43 @@
+{% extends 'accounts/admin/base_admin.html' %}
+
+{% block content %}
+
+<h1 class="text-2xl font-bold text-cyan-400 mb-6">📄 Resume Analysis</h1>
+
+<div class="bg-gray-800 p-6 rounded-xl shadow overflow-x-auto">
+
+  <table class="w-full text-white">
+    <thead>
+      <tr class="border-b border-gray-700 text-gray-400">
+        <th class="py-2 text-left">User</th>
+        <th class="py-2 text-left">Job Role</th>
+        <th class="py-2 text-left">Resume</th>
+        <th class="py-2 text-left">Date</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for r in resumes %}
+      <tr class="border-b border-gray-700 hover:bg-gray-700 transition">
+        <td class="py-2">{{ r.user.username }}</td>
+        <td class="py-2">{{ r.job_role }}</td>
+        <td class="py-2">
+          <a href="{{ r.resume.url }}" target="_blank" class="text-cyan-400 hover:underline">
+            View
+          </a>
+        </td>
+        <td class="py-2">{{ r.created_at|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center py-4 text-gray-400">
+          No resumes found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+
+{% endblock %}
