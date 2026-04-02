@@ -364,26 +364,26 @@ def refresh_captcha(request):
     })
 
 
-# def send_email(to_email, subject, html_content):
-#     message = Mail(
-#         from_email=settings.DEFAULT_FROM_EMAIL,
-#         to_emails=to_email,
-#         subject=subject,
-#         html_content=html_content
-#     )
+def send_email(to_email, subject, html_content):
+    message = Mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to_emails=to_email,
+        subject=subject,
+        html_content=html_content
+    )
 
-#     # Add plain text version
-#     message.add_content(Content("text/plain", "Your registration is successful."))
+    # Add plain text version
+    message.add_content(Content("text/plain", "Your registration is successful."))
 
-#     # Optional: Reply-To header
-#     message.reply_to = settings.DEFAULT_FROM_EMAIL
+    # Optional: Reply-To header
+    message.reply_to = settings.DEFAULT_FROM_EMAIL
 
-#     try:
-#         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-#         response = sg.send(message)
-#         print("Email sent, status:", response.status_code)
-#     except Exception as e:
-        # print("Error sending email:", e)
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        print("Email sent, status:", response.status_code)
+    except Exception as e:
+        print("Error sending email:", e)
 
 # def register_view(request):
 #     if request.method == "POST":
@@ -457,24 +457,24 @@ def refresh_captcha(request):
 #         'captcha_image': captcha_image
 #     })
 
-# locally eamil setup code
-from django.core.mail import EmailMultiAlternatives
+# # locally eamil setup code
+# from django.core.mail import EmailMultiAlternatives
 
-def send_email(to_email, subject, html_content):
-    # Django EmailMultiAlternatives for HTML + plain text
-    plain_text = "Your registration is successful."
-    msg = EmailMultiAlternatives(
-        subject,
-        plain_text,
-        settings.DEFAULT_FROM_EMAIL,
-        [to_email]
-    )
-    msg.attach_alternative(html_content, "text/html")
-    try:
-        msg.send()
-        print(f"Email sent to {to_email}")
-    except Exception as e:
-        print(f"Error sending email: {e}")
+# def send_email(to_email, subject, html_content):
+#     # Django EmailMultiAlternatives for HTML + plain text
+#     plain_text = "Your registration is successful."
+#     msg = EmailMultiAlternatives(
+#         subject,
+#         plain_text,
+#         settings.DEFAULT_FROM_EMAIL,
+#         [to_email]
+#     )
+#     msg.attach_alternative(html_content, "text/html")
+#     try:
+#         msg.send()
+#         print(f"Email sent to {to_email}")
+#     except Exception as e:
+#         print(f"Error sending email: {e}")
 
 # def register_view(request):
 #     if request.method == "POST":
